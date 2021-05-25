@@ -5,6 +5,7 @@ Allows you to search, conversation lookup, messages lookup, profile view etc.
 
 ## Contents
 
+- [Getting Started](#getting-started)
 - [ Methods/Functions ](#Methods)
   - [ Get Conversation ](#get-conversations)
   - [ Get Messages ](#get-messages)
@@ -12,6 +13,17 @@ Allows you to search, conversation lookup, messages lookup, profile view etc.
   - [ Get Members ](#get-members)
   - [ User Search ](#user-search)
   - [ Logout ](#logout)
+
+## Getting Started
+
+Install this package from pypi
+
+```
+$ pip install lpulive
+$ python
+>>> from lpulive import User
+>>>
+```
 
 ## Methods
 

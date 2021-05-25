@@ -27,7 +27,7 @@ $ python
 
 ## Methods
 
-## `See all above Methods`
+## `See all Methods`
 
 ---
 

@@ -10,7 +10,7 @@ with open("README.md", "r") as f:
 setuptools.setup(
     name="lpulive",
     packages=["lpulive"],
-    version="0.1.0",
+    version="0.2.0",
     description="Lpulive api for searching, getting messages, getting user detail etc",
     long_description_content_type="text/markdown",
     long_description=long_description,
@@ -25,6 +25,6 @@ setuptools.setup(
         "Programming Language :: Python :: 3",
     ],
     keywords=["lpulive search", "lpulive api",
-              "lpulive", "messaging"],
+              "lpulive", "messaging", "lpu"],
     install_requires=["bs4", "requests", "lxml"],
 )

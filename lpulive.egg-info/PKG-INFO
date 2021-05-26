@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: lpulive
-Version: 0.1.0
+Version: 0.2.0
 Summary: Lpulive api for searching, getting messages, getting user detail etc
 Home-page: https://github.com/knight-byte/lpulive
 Author: Abunachar Yeahhia
@@ -14,6 +14,7 @@ Description: # LpuLive
         
         ## Contents
         
+        - [Getting Started](#getting-started)
         - [ Methods/Functions ](#Methods)
           - [ Get Conversation ](#get-conversations)
           - [ Get Messages ](#get-messages)
@@ -22,9 +23,20 @@ Description: # LpuLive
           - [ User Search ](#user-search)
           - [ Logout ](#logout)
         
+        ## Getting Started
+        
+        Install this package from pypi
+        
+        ```
+        $ pip install lpulive
+        $ python
+        >>> from lpulive import User
+        >>>
+        ```
+        
         ## Methods
         
-        ## `See all above Methods`
+        ## `See all Methods`
         
         ---
         
@@ -215,7 +227,7 @@ Description: # LpuLive
         
         Made with 💜 in India
         
-Keywords: lpulive search,lpulive api,lpulive,messaging
+Keywords: lpulive search,lpulive api,lpulive,messaging,lpu
 Platform: UNKNOWN
 Classifier: Intended Audience :: Developers
 Classifier: License :: OSI Approved :: MIT License

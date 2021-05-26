@@ -5,6 +5,7 @@ File       : lpulive_main.py
 
 # --------- Imports --------
 from posixpath import expanduser
+from typing import Dict
 from lpulive.lpulive_urls import (GET_CAHAT_MEMBERS_URL, GET_CONVRSATION_URL, GET_MESSAGES_THREADS_URL,
                                   GET_MESSAGES_URL, GET_WORKSPACE_DETAIL_URL,
                                   LOGIN_URL, LOGIN_VIA_TOKEN_URL, SEARCH_URL,
@@ -19,8 +20,8 @@ import json
 class User:
 
     def __init__(self, registration_no, password) -> None:
-        self.__REGNO = registration_no
-        self.__PASSWORD = password
+        self.__REGNO = str(registration_no)
+        self.__PASSWORD = str(password)
         self.__DATA_PATH = f"data_{self.__REGNO}.pkl"
         self.__LOGIN_SUCCESS = False
         self.__DATA_FILE = {}
@@ -140,43 +141,49 @@ class User:
         return return_data
 
     def __get_conversations_func(self) -> dict:
-        gc_data = f"en_user_id={self.__EN_USER_ID}&page_start=1&device_id=random_text&device_details={self.__DEVICE_DETAILS}"
-        gc_responce = self.__USER_SESSION.get(
-            url=f"{GET_CONVRSATION_URL}?{gc_data}", headers=self.__HEADERS)
-        if gc_responce.status_code == 200:
-            temp_data = gc_responce.json()["data"]
-            total_chat = temp_data["count"]
-            filter_chat_list = self.__get_conversation_filter(
-                temp_data["conversation_list"])
-            final_data = {
-                "chats": filter_chat_list,
-                "total_chat": total_chat,
-            }
-            return final_data
+        if self.__LOGIN_SUCCESS:
+            gc_data = f"en_user_id={self.__EN_USER_ID}&page_start=1&device_id=random_text&device_details={self.__DEVICE_DETAILS}"
+            gc_responce = self.__USER_SESSION.get(
+                url=f"{GET_CONVRSATION_URL}?{gc_data}", headers=self.__HEADERS)
+            if gc_responce.status_code == 200:
+                temp_data = gc_responce.json()["data"]
+                total_chat = temp_data["count"]
+                filter_chat_list = self.__get_conversation_filter(
+                    temp_data["conversation_list"])
+                final_data = {
+                    "chats": filter_chat_list,
+                    "total_chat": total_chat,
+                }
+                return final_data
+            else:
+                error_data = {
+                    "message": "fail to fetch data"
+                }
+                return error_data
         else:
-            error_data = {
-                "message": "fail to fetch data"
-            }
-            return error_data
+            return self.login_fail_message(type="dict")
 
     def __get_message_threads_func(self, chat_id, msg_id) -> list:
-        return_data = []
-        gmt_data = f"muid={msg_id}&en_user_id={self.__EN_USER_ID}&channel_id={chat_id}"
-        gmt_responce = self.__USER_SESSION.get(
-            url=f"{GET_MESSAGES_THREADS_URL}?{gmt_data}", headers=self.__HEADERS)
-        if gmt_responce.status_code == 200:
-            temp_data = gmt_responce.json()["thread_message"]
-            for single in temp_data:
-                temp = {
-                    "from_user": single["full_name"].split(":")[0].strip(),
-                    "regno": single["username"],
-                    "message": single["message"],
-                    "date": single["date_time"]
-                }
-                return_data.append(temp)
-            return return_data
+        if self.__LOGIN_SUCCESS:
+            return_data = []
+            gmt_data = f"muid={msg_id}&en_user_id={self.__EN_USER_ID}&channel_id={chat_id}"
+            gmt_responce = self.__USER_SESSION.get(
+                url=f"{GET_MESSAGES_THREADS_URL}?{gmt_data}", headers=self.__HEADERS)
+            if gmt_responce.status_code == 200:
+                temp_data = gmt_responce.json()["data"]["thread_message"]
+                for single in temp_data:
+                    temp = {
+                        "from_user": single["full_name"].split(":")[0].strip(),
+                        "regno": single["username"],
+                        "message": single["message"],
+                        "date": single["date_time"]
+                    }
+                    return_data.append(temp)
+                return return_data
+            else:
+                return ["Fail to load thread, please check m_id"]
         else:
-            return ["Fail to load thread, please check m_id"]
+            return self.login_fail_message(type="list")
 
     def __get_messages_filter(self, data, chat_id, msg_thread=False) -> list:
         return_data = []
@@ -210,29 +217,34 @@ class User:
         return return_data
 
     def __get_messages_func(self, chat_id, msg_thread=False) -> dict:
-        gm_data = f"channel_id={chat_id}&en_user_id={self.__EN_USER_ID}&page_start=1&store_promise=true&device_id=random_text&device_details={self.__DEVICE_DETAILS}"
-        gm_responce = self.__USER_SESSION.get(
-            url=f"{GET_MESSAGES_URL}?{gm_data}", headers=self.__HEADERS)
-        if gm_responce.status_code == 200:
-            temp_data = gm_responce.json()["data"]
-            filtered_messages = self.__get_messages_filter(
-                temp_data["messages"], chat_id, msg_thread)
-            chat_name = temp_data["label"]
-            user_name = temp_data["full_name"]
-            total_messages = len(temp_data["messages"])
-            final_data = {
-                "chat_id": chat_id,
-                "messages": filtered_messages,
-                "chat_name": chat_name,
-                "total_messages": total_messages,
-                "user_name": user_name,
-            }
-            return final_data
+        if self.__LOGIN_SUCCESS:
+            gm_data = f"channel_id={chat_id}&en_user_id={self.__EN_USER_ID}&page_start=1&store_promise=true&device_id=random_text&device_details={self.__DEVICE_DETAILS}"
+            gm_responce = self.__USER_SESSION.get(
+                url=f"{GET_MESSAGES_URL}?{gm_data}", headers=self.__HEADERS)
+            if gm_responce.status_code == 200:
+                temp_data = gm_responce.json()["data"]
+                filtered_messages = self.__get_messages_filter(
+                    temp_data["messages"], chat_id, msg_thread)
+                chat_name = temp_data["label"]
+                user_name = temp_data["full_name"]
+                total_messages = len(temp_data["messages"])
+                final_data = {
+                    "chat_id": chat_id,
+                    "messages": filtered_messages,
+                    "chat_name": chat_name,
+                    "total_messages": total_messages,
+                    "user_name": user_name,
+                }
+                with open("lpulive/test/data.json", "w") as f:
+                    json.dump(final_data, f)
+                return final_data
+            else:
+                error_data = {
+                    "message": "fail to load messages, Please check chat_id"
+                }
+                return error_data
         else:
-            error_data = {
-                "message": "fail to load messages, Please check chat_id"
-            }
-            return error_data
+            return self.login_fail_message(type="dict")
 
     def __get_chat_members_filter(self, data):
         return_data = []
@@ -246,35 +258,37 @@ class User:
             return_data.append(temp)
         return return_data
 
-    def __get_chat_members_func(self, chat_id):
-        def gcm_data_func(page):
-            # gcm_data = f"channel_id={chat_id}&en_user_id={self.__EN_USER_ID}&get_data_type=MEMBERS&user_page_start={page}"
-            gcm_data2 = {"channel_id": chat_id,
-                         "en_user_id": self.__EN_USER_ID,
-                         "get_data_type": "MEMBERS",
-                         "user_page_start": page}
-            res = self.__USER_SESSION.get(
-                url=GET_CAHAT_MEMBERS_URL, json=gcm_data2, headers=self.__HEADERS)
-            if res.status_code == 200:
-                return res.json()["data"]["chat_members"]
-            else:
-                return None
+    def __get_chat_members_func(self, chat_id) -> dict:
+        if self.__LOGIN_SUCCESS:
+            def gcm_data_func(page):
+                gcm_data2 = {"channel_id": chat_id,
+                             "en_user_id": self.__EN_USER_ID,
+                             "get_data_type": "MEMBERS",
+                             "user_page_start": page}
+                res = self.__USER_SESSION.get(
+                    url=GET_CAHAT_MEMBERS_URL, json=gcm_data2, headers=self.__HEADERS)
+                if res.status_code == 200:
+                    return res.json()["data"]["chat_members"]
+                else:
+                    return None
 
-        return_data = []
-        for page in range(0, 5000, 51):
-            x = gcm_data_func(page=page)
-            if x == None:
-                return {"message": "Fail to fetch members, Please check chat_id"}
-            elif len(x) < 1:
-                break
-            else:
-                return_data += x
-        final_data = {
-            "chat_id": chat_id,
-            "members": self.__get_chat_members_filter(return_data),
-            "total_members": len(return_data)
-        }
-        return final_data
+            return_data = []
+            for page in range(0, 5000, 51):
+                x = gcm_data_func(page=page)
+                if x == None:
+                    return {"message": "Fail to fetch members, Please check chat_id"}
+                elif len(x) < 1:
+                    break
+                else:
+                    return_data += x
+            final_data = {
+                "chat_id": chat_id,
+                "members": self.__get_chat_members_filter(return_data),
+                "total_members": len(return_data)
+            }
+            return final_data
+        else:
+            return self.login_fail_message(type="dict")
 
     def __search_user_filter(self, data):
         return_data = []
@@ -289,27 +303,40 @@ class User:
             return_data.append(temp)
         return return_data
 
-    def __search_user_func(self, user):
-        su_data = {
-            "en_user_id": self.__EN_USER_ID,
-            "search_text": user,
-            "user_role": "USER",
-            "search_deactivated_member": "true"
-        }
-        su_response = self.__USER_SESSION.get(
-            url=SEARCH_URL, json=su_data, headers=self.__HEADERS)
-        if su_response.status_code == 200:
-            data = su_response.json()["data"]["users"]
-            users = self.__search_user_filter(data)
-            return_data = {
-                "search_query": user,
-                "users": users,
-                "total_found": len(users)
+    def __search_user_func(self, user) -> dict:
+        if self.__LOGIN_SUCCESS:
+            if len(user) < 3:
+                return {"message": "Search Query must be atleast 2 character long"}
+            su_data = {
+                "en_user_id": self.__EN_USER_ID,
+                "search_text": user,
+                "user_role": "USER",
+                "search_deactivated_member": "true"
             }
-            return return_data
+            su_response = self.__USER_SESSION.get(
+                url=SEARCH_URL, json=su_data, headers=self.__HEADERS)
+            if su_response.status_code == 200:
+                data = su_response.json()["data"]["users"]
+                users = self.__search_user_filter(data)
+                return_data = {
+                    "search_query": user,
+                    "users": users,
+                    "total_found": len(users)
+                }
+                return return_data
 
+            else:
+                return {"message": "fail to fetch, please try again later"}
         else:
-            return {"message": "fail to fetch, please try again later"}
+            return self.login_fail_message(type="dict")
+
+    def login_fail_message(self, type="str"):
+        if type == "dict":
+            return {"message": "fail to login, check user details"}
+        elif type == "list":
+            return ["fail to login, check user details"]
+        else:
+            return "fail to login, check user details"
 
     """# ------------------------ USER AVAILABLE METHODS ------------------------------ #"""
 

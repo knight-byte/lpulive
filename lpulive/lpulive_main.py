@@ -4,9 +4,7 @@ File       : lpulive_main.py
 '''
 
 # --------- Imports --------
-from posixpath import expanduser
-from typing import Dict
-from lpulive.lpulive_urls import (GET_CAHAT_MEMBERS_URL, GET_CONVRSATION_URL, GET_MESSAGES_THREADS_URL,
+from lpulive.lpulive_urls import (EDIT_USER_DETAIL, GET_CAHAT_MEMBERS_URL, GET_CONVRSATION_URL, GET_MESSAGES_THREADS_URL,
                                   GET_MESSAGES_URL, GET_WORKSPACE_DETAIL_URL,
                                   LOGIN_URL, LOGIN_VIA_TOKEN_URL, SEARCH_URL,
                                   SWITCH_WORKSPACE_URL)
@@ -37,6 +35,8 @@ class User:
         self.__EN_USER_ID = self.__DATA_FILE["en_user_id"] if self.__LOGIN_SUCCESS else None
         self.__ACCESS_TOKEN = self.__DATA_FILE["access_token"] if self.__LOGIN_SUCCESS else None
         self.__LPU_ACCESS_TOKEN = self.__DATA_FILE["lpu_access_token"] if self.__LOGIN_SUCCESS else None
+        self.__FULL_NAME = self.__DATA_FILE["full_name"] if self.__LOGIN_SUCCESS else None
+        self.__FUGU_USER_ID = self.__DATA_FILE["fugu_user_id"] if self.__LOGIN_SUCCESS else None
 
     def __set_pickle_container(self, data_obj, data_path):
         with open(data_path, "wb") as pkl:
@@ -80,10 +80,13 @@ class User:
         if login_response.status_code == 200:
             return_data = {}
             login_response_data = login_response.json()
+
             self.__WORKSPACE_ID = login_response_data["data"]["workspaces_info"][0]["workspace_id"]
             self.__ACCESS_TOKEN = login_response_data["data"]["user_info"]["access_token"]
             self.__LPU_ACCESS_TOKEN = login_response_data["data"]["user_info"]["lpu_access_token"]
             self.__EN_USER_ID = login_response_data["data"]["workspaces_info"][0]["en_user_id"]
+            self.__FULL_NAME = login_response_data["data"]["workspaces_info"][0]["full_name"]
+            self.__FUGU_USER_ID = login_response_data["data"]["workspaces_info"][0]["fugu_user_id"]
             return_data = {
                 "workspace_id": self.__WORKSPACE_ID,
                 "access_token": self.__ACCESS_TOKEN,
@@ -91,8 +94,9 @@ class User:
                 "en_user_id": self.__EN_USER_ID,
                 "user_session": self.__USER_SESSION,
                 "password": self.__PASSWORD,
-                "regno": self.__REGNO
-
+                "regno": self.__REGNO,
+                "full_name": self.__FULL_NAME,
+                "fugu_user_id": self.__FUGU_USER_ID
             }
             self.__LOGIN_SUCCESS = True
             self.__set_pickle_container(return_data, self.__DATA_PATH)
@@ -343,8 +347,8 @@ class User:
     # ----------GET CONVERSATION METHOD --------------
     '''
     - To get all the active chat
-    - function takes no argument 
-    - function return a dictionary object 
+    - function takes no argument
+    - function return a dictionary object
         > chats : list of all the chat active on users profile
             -> id : id of particular chat
             -> chat_name : name of the chat
@@ -406,8 +410,8 @@ class User:
 
     # ------------ LOGOUT METHOD ---------------
     '''
-    - Logout the user from local session 
-    - Clears up all the local cache 
+    - Logout the user from local session
+    - Clears up all the local cache
     - function takes no argument
     - function return a string object
     '''
@@ -439,17 +443,17 @@ class User:
 
     # ------------ SEARCH USER METHOD ----------
     '''
-    - To search user 
+    - To search user
     - function takes one argument query
         > query : search query
     - function returns a dictionary object
         > search_query : search query
         > users : list of users found
-            -> id : id 
+            -> id : id
             -> name : name of the user
             -> regno : registration number of the user
             -> department : department/batch of the user
-            -> profile_img : profile image of the user 
+            -> profile_img : profile image of the user
         > total_found : total user matched the query
     '''
 

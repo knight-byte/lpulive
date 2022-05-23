@@ -1,7 +1,8 @@
-data_11917210.pkl
+data_*.pkl
 lpulive/test/*
 lpulive/**/__pycache__/*
 lpulive/__main__.py
 bin/*
 lib/*
 pyvenv.cfg
+.vscode/*
